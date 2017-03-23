@@ -57,23 +57,24 @@ def get_pitch_freq(frame, frame_rate):
 		
 	T0 = extractT0(sequence, min_lag)
 	pitch_frequency = 1/(T0*Ts)
+	return pitch_frequency
 	
 	
 # Split speech into 32ms frames
 # get pitch of each 32ms frame
 # returns average pitch value of *entire speech sample*
 # best to have speech signal not be too long that pitch changes dramatically  
-def average_pitch(speech):
-	
+def average_pitch(speech, frame_rate):
+	frame_size = 256 # 32ms
 	pitch_values = [] # Create an empty list for storing pitch values for averaging later
 	frame_number = 0;
 	
 	for j in range(0, (len(speech) - frame_size) , frame_size):
-		pitch = get_pitch_freq(speech[j:j+frame_size])
+		pitch = get_pitch_freq(speech[j:j+frame_size], frame_rate) # get pitch of 32ms frame
 		pitch_values[frame_number] = pitch
 		frame_number = frame_number + 1
 		
-	average_pitch = # sum all values in list and divide by its length to get average pitch value over entire sample
+	average_pitch = sum(pitch_values)/len(pitch_values) # sum all values in list and divide by its length to get average pitch value over entire sample
 	
 	return average_pitch
 	
