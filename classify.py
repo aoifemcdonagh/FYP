@@ -7,11 +7,16 @@
 
 import pitch as p
 import spectrogram_generator as sg
+import wave
 
 def main(speech_file):
 	threshold_f0 = 180 # 
 	segment_size = 50000; # number of samples in each segment
-	pitch = p.average_pitch(speech_file)
+	
+	speech, frame_rate = get_wav_file(speech_file) # Read speech file and get frame rate
+	
+	
+	pitch = p.average_pitch(speech_file, frame_rate)
 	
 	if pitch < threshold: # Use female classifer
 		classifier = "female classifier"
@@ -27,6 +32,14 @@ def main(speech_file):
 		[path, name] = os.path.split(file)
 		[name, ext] = os.path.splitext(name)
 		
+
+def get_wav_file(file_location):
+	wav = wave.open(file_location, 'r') # Open the file at 'file_location' in read-only mode
+	frames = wav.readframes(-1)
+	speech = pylab.fromstring(frames, 'Int16')
+	frame_rate = wav.getframerate()
+	wav.close()
+	return speech, frame_rate
 
 if __name__ == "__main__" : 
 	main(sys.argv[1])
