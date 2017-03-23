@@ -9,6 +9,7 @@ import os
 import sys
 import pitch as p
 import spectrogram_generator as sg
+import label_image as li
 import wave
 
 def main(speech_file):
