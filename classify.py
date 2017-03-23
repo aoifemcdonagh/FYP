@@ -5,6 +5,8 @@
 #
 # File pass in file path to audio
 
+import os
+import sys
 import pitch as p
 import spectrogram_generator as sg
 import wave
