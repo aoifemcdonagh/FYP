@@ -39,7 +39,7 @@ def create_spectrograms(wavfile_location, spectrogram_location):
 		for i in range(0, (len(speech) - segment_size - 1), segment_size): # Iterate through until EOF
 			spectrogram = plt.specgram(speech[i : i + segment_size], Fs = frame_rate) # Creating spectrogram
 			plt.axis('off')
-			plt.savefig(spectrogram_location + "/" + name + "_" + str(i+segment_size) + ".png", bbox_inches = 'tight', pad_inches = 0)
+			plt.savefig(spectrogram_location + "/" + name + "_" + str(i+segment_size) + ".jpg", bbox_inches = 'tight', pad_inches = 0)
 
 		
 # Function to create folders to store spectrograms in
