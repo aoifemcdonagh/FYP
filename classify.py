@@ -7,39 +7,68 @@
 
 import os
 import sys
-import pitch as p
-import spectrogram_generator as sg
-import label_image as li
+import glob
+import pylab
+import errno
 import wave
+import datetime
+import pitch as p
+import spectrogram_generator_one_segment as sg
+import label_image as li
 
-def main(speech_file):
-	[path, name] = os.path.split(file)
+female_classifier = '/home/aoife/tf_files/female_classifier' # location of female_classifier ***DO NOT CHANGE***
+male_classifier = '/home/aoife/tf_files/male_classifier' # location of male_classifier ***DO NOT CHANGE***
+
+
+def main(speech_file_location):
+	[path, name] = os.path.split(speech_file_location)
 	[name, ext] = os.path.splitext(name)
+	
+	spectrogram_location = create_spectrogram_location(path)
 	classifications = [] # empty list to store classification values
-	segment_number = 0
 	
 	threshold_f0 = 180 # 
 	segment_size = 50000; # number of samples in each segment
-	speech, frame_rate = get_wav_file(speech_file) # Read speech file and get frame rate
+	speech, frame_rate = get_wav_file(speech_file_location) # Read speech file and get frame rate
+	print("frame rate: " + str(frame_rate))
 	
-	for i in range(0, len(speech_file)-segment_size, segment_size):
-		pitch = p.average_pitch(speech_file[i:i+segment_size], frame_rate)
-		spectrogram_location = sg.main(speech_file[i:i+segment_size], segment_size) # Create Spectrogram for this segment
+	segment_number = 1
+	for i in range(0, len(speech)-segment_size, segment_size):
+		pitch = p.average_pitch(speech[i:i+segment_size], frame_rate)
+		print("pitch is:")
+		print pitch
+		sg.main(speech_file_location, speech[i:i+segment_size], spectrogram_location) # Create Spectrogram for this segment
 	
-		if pitch < threshold: # Use female classifer
+		if pitch > threshold_f0: # Use female classifer
+			print ("Female Voice detected in file " + name)
 			classifier = "female classifier"
 			# perform classification using this classifier and 'spectrogram_location'(system call??)
-			classification # = result of classification
+			classification = li.classify_image((spectrogram_location + "/" + name + ".jpg"), female_classifier)
 
 		else:
+			print ("Male Voice detected in file " + name)
 			classifier = "male classifier"
 			# perform classification using this classifier and 'spectrogram_location'(system call??)
-			classification # = result of classification
+			classification = li.classify_image((spectrogram_location + "/" + name + ".jpg"), male_classifier)
 			
-			
-		classifications[segment_number] = classification
-		segment_number = segment_number + 1
-		
+		classifications.append(classification)
+		print classifications
+	
+	print("Classification of file " + name + " finished")
+	
+def create_spectrogram_location(location):
+	try:
+		location = location + "/spectrograms"
+		os.makedirs(location) # Will create the directory if it doesn't exist
+	
+	except OSError as exception: # If an error is raised telling us the directory exists (from previous run) ignore
+		if exception.errno != errno.EEXIST: # Raise all other errors
+			raise
+	
+	datestr = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+	test_location = location + "/" + datestr + "TestData"
+	os.makedirs(test_location) # Make unique directory for results of this test
+	return test_location # Return unique file path 
 
 def get_wav_file(file_location):
 	wav = wave.open(file_location, 'r') # Open the file at 'file_location' in read-only mode
@@ -50,4 +79,5 @@ def get_wav_file(file_location):
 	return speech, frame_rate
 
 if __name__ == "__main__" : 
+	print("hello")
 	main(sys.argv[1])
