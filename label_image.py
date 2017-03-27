@@ -1,7 +1,6 @@
 # Python script to output a classification for an image based on the classifier specified
 #
-#	Aoife McDonagh
-#	13411348
+#	modified version of: https://github.com/llSourcell/tensorflow_image_classifier/blob/master/src/label_image.py
 
 import tensorflow as tf
 import sys
@@ -13,6 +12,7 @@ def classify_image(image_path, classifier_path):
 	image_data = tf.gfile.FastGFile(image_path, 'rb').read()
 	label_lines = [line.rstrip() for line in tf.gfile.GFile(classifier_path + "/retrained_labels.txt")]
 	
+	classification = ""
 	with tf.gfile.FastGFile(classifier_path + "/retrained_graph.pb", 'rb') as f:
 		graph_def = tf.GraphDef()
 		graph_def.ParseFromString(f.read())
@@ -21,11 +21,22 @@ def classify_image(image_path, classifier_path):
 	with tf.Session() as sess:
 		# Feed the image_data as input to the graph and get first prediction
 		softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
-
+		
+		predictions = sess.run(softmax_tensor, \
+			{'DecodeJpeg/contents:0': image_data})
+		
 		# Sort to show labels of first prediction in order of confidence
 		top_k = predictions[0].argsort()[-len(predictions[0]):][::-1]
 		
+		classification = ""
+		top_score = 0
 		for node_id in top_k:
 			human_string = label_lines[node_id]
 			score = predictions[0][node_id]
 			print('%s (score = %.5f)' % (human_string, score))
+			
+			if score > top_score:
+				top_score = score
+				classification = human_string
+			
+	return classification
